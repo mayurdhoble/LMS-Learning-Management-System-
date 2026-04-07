@@ -35,19 +35,10 @@ COPY --from=frontend-build /app/UI/dist ./public
 # Create necessary directories
 RUN mkdir -p uploads uploads/{assessments,submissions,smekit,resumes,proofs}
 
-# Create startup script
-RUN echo '#!/bin/sh\n\
-set -e\n\
-echo "Starting LMS Platform..."\n\
-echo "Backend API on port 8000"\n\
-echo "Frontend on port 8000/public"\n\
-exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}' > /app/start.sh && \
-chmod +x /app/start.sh
-
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
 EXPOSE 8000
 
-CMD ["/app/start.sh"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
