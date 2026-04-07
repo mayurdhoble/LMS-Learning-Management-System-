@@ -5,7 +5,7 @@ WORKDIR /app/UI
 
 COPY UI/package*.json ./
 
-RUN npm ci
+RUN npm install
 
 COPY UI .
 
