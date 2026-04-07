@@ -76,19 +76,7 @@ def startup():
 
 
 # Serve frontend static files (when running in Docker with bundled frontend)
-frontend_dist = os.path.join(os.path.dirname(__file__), "..", "public")
+# Frontend is copied to /app/public in the Dockerfile
+frontend_dist = os.path.join(os.path.dirname(__file__), "public")
 if os.path.exists(frontend_dist):
-    @app.get("/{full_path:path}")
-    async def serve_frontend(full_path: str):
-        """Fallback: serve index.html for SPA routing"""
-        from fastapi.responses import FileResponse
-
-        # Don't serve static files here if they should be served by middleware
-        if full_path.startswith("api/") or full_path in ("health", "docs", "openapi.json"):
-            return None
-
-        index_path = os.path.join(frontend_dist, "index.html")
-        return FileResponse(index_path)
-
-    # Mount the public directory for static assets
-    app.mount("", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
