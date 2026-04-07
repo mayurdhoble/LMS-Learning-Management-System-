@@ -19,7 +19,10 @@ app = FastAPI(title="LMS Platform API", version="2.0.0")
 origins = [
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://localhost:8000",
     "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:8000",
 ]
 # Add production frontend URL from env
 frontend_url = os.getenv("FRONTEND_URL", "")
@@ -70,3 +73,22 @@ def startup():
             db.close()
     except Exception:
         db.close()
+
+
+# Serve frontend static files (when running in Docker with bundled frontend)
+frontend_dist = os.path.join(os.path.dirname(__file__), "..", "public")
+if os.path.exists(frontend_dist):
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        """Fallback: serve index.html for SPA routing"""
+        from fastapi.responses import FileResponse
+
+        # Don't serve static files here if they should be served by middleware
+        if full_path.startswith("api/") or full_path in ("health", "docs", "openapi.json"):
+            return None
+
+        index_path = os.path.join(frontend_dist, "index.html")
+        return FileResponse(index_path)
+
+    # Mount the public directory for static assets
+    app.mount("", StaticFiles(directory=frontend_dist, html=True), name="frontend")

@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  lms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - MODEL_NAME=${MODEL_NAME:-anthropic/claude-sonnet-4-20250514}
+      - JWT_SECRET=${JWT_SECRET:-change_this_to_a_random_secret_key_in_production}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./lms.db}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:8000}
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      - PORT=8000
+    volumes:
+      - ./Server:/app
+      - /app/__pycache__
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

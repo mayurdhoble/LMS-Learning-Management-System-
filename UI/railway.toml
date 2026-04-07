@@ -1,11 +1,8 @@
 [build]
-builder = "NIXPACKS"
+builder = "DOCKER"
+dockerfile = "UI/Dockerfile"
 
 [deploy]
-startCommand = "npx serve dist -s -l $PORT"
-
-[phases.install]
-cmds = ["npm install"]
-
-[phases.build]
-cmds = ["npm run build"]
+startCommand = "serve -s dist -l $PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 30
